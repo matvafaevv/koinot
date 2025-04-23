@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Koinot Sahifasi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(ellipse at bottom, #000 0%, #222 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            perspective: 1200px; /* 3D effekt chuqurligi */
+            transform-style: preserve-3d;
+        }
+
+        .space {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            transform-style: preserve-3d;
+        }
+
+        .stars {
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            z-index: 0;
+            opacity: 0.7;
+            animation: moveStars 50s linear infinite;
+        }
+
+        @keyframes moveStars {
+            0% { transform: translate3d(0, 0, -200px) rotateZ(0deg); }
+            100% { transform: translate3d(100%, 100%, -200px) rotateZ(360deg); }
+        }
+
+        .sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, #ffdd00, #ff8800);
+            border-radius: 50%;
+            box-shadow: 0 0 80px #ffaa00;
+            transform: translate3d(-50%, -50%, 50px);
+            z-index: 2;
+        }
+
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: rotateOrbit var(--duration) linear infinite;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes rotateOrbit {
+            from { transform: translate(-50%, -50%) rotateY(0deg) rotateZ(0deg); }
+            to { transform: translate(-50%, -50%) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        .planet {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            border-radius: 50%;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            animation: floatPlanet 8s infinite ease-in-out;
+        }
+
+        @keyframes floatPlanet {
+            0%, 100% { transform: translate3d(0, -50%, var(--z)) rotateY(0deg); }
+            50% { transform: translate3d(0, calc(-50% - 15px), var(--z)) rotateY(180deg); }
+        }
+
+        .planet::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 60%);
+            z-index: 1;
+        }
+
+        .planet.mercury { background: linear-gradient(to top right, #888, #444); width: 30px; height: 30px; --z: 60px; }
+        .planet.venus { background: linear-gradient(to top right, #dda, #aa6); width: 40px; height: 40px; --z: 90px; }
+        .planet.earth { background: linear-gradient(to top right, #468, #246); width: 50px; height: 50px; --z: 130px; }
+        .planet.mars { background: linear-gradient(to top right, #a44, #822); width: 45px; height: 45px; --z: 170px; }
+        .planet.jupiter { background: linear-gradient(to top right, #fa0, #d80); width: 70px; height: 70px; --z: 220px; }
+        .planet.saturn {
+            background: linear-gradient(to top right, #ecb, #ba8); width: 65px; height: 65px; --z: 280px;
+        }
+        .planet.saturn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            width: 120%;
+            height: 30%;
+            border-radius: 50%;
+            border: 5px solid #cc9966;
+            background: transparent;
+            opacity: 0.7;
+        }
+        .planet.uranus { background: linear-gradient(to top right, #8cf, #6ad); width: 55px; height: 55px; --z: 340px; }
+        .planet.neptune { background: linear-gradient(to top right, #369, #147); width: 58px; height: 58px; --z: 400px; }
+        .planet.pluto { background: linear-gradient(to top right, #bbb, #999); width: 25px; height: 25px; --z: 450px; }
+
+        canvas#shooting-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .xasan {
+            text-align: center;
+            color: white;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+            z-index: 3;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 70px;
+            width: 100%;
+            text-align: center;
+            z-index: 3;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            margin: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background 0.3s ease;
+        }
+
+        .controls button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Orbit masofalari va tezliklari */
+        .orbit:nth-child(3) { --distance: 90px; --duration: 20s; } /* Merkuriy */
+        .orbit:nth-child(4) { --distance: 140px; --duration: 30s; } /* Venera */
+        .orbit:nth-child(5) { --distance: 190px; --duration: 40s; } /* Yer */
+        .orbit:nth-child(6) { --distance: 240px; --duration: 50s; } /* Mars */
+        .orbit:nth-child(7) { --distance: 320px; --duration: 60s; } /* Yupiter */
+        .orbit:nth-child(8) { --distance: 390px; --duration: 70s; } /* Saturn */
+        .orbit:nth-child(9) { --distance: 460px; --duration: 80s; } /* Neptun */
+        .orbit:nth-child(10) { --distance: 520px; --duration: 90s; } /* Uran */
+        .orbit:nth-child(11) { --distance: 580px; --duration: 100s; } /* Pluton */
+    </style>
+</head>
+<body>
+    <div class="space">
+        <h1 class="xasan">XASANBOY</h1>
+        <div class="sun"></div>
+        <div class="stars"></div>
+        <canvas id="shooting-stars"></canvas>
+
+        <div class="orbit"><div class="planet mercury" title="Merkuriy"></div></div>
+        <div class="orbit"><div class="planet venus" title="Venera"></div></div>
+        <div class="orbit"><div class="planet earth" title="Yer"></div></div>
+        <div class="orbit"><div class="planet mars" title="Mars"></div></div>
+        <div class="orbit"><div class="planet jupiter" title="Yupiter"></div></div>
+        <div class="orbit"><div class="planet saturn" title="Saturn"></div></div>
+        <div class="orbit"><div class="planet neptune" title="Neptun"></div></div>
+        <div class="orbit"><div class="planet uranus" title="Uran"></div></div>
+        <div class="orbit"><div class="planet pluto" title="Pluton"></div></div>
+
+        <div class="controls">
+            <button onclick="changeSpeed(0.8)">Sekinlashtir</button>
+            <button onclick="changeSpeed(1.2)">Tezlashtir</button>
+            <button onclick="changeSize(1.1)">Kattalashtir</button>
+            <button onclick="changeSize(0.9)">Kichiklashtir</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("shooting-stars");
+        const ctx = canvas.getContext("2d");
+
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        class Comet {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = random(0, canvas.width);
+                this.y = random(0, canvas.height / 2);
+                this.len = random(100, 300);
+                this.speed = random(4, 10);
+                this.size = random(1, 2.5);
+                this.alpha = 1;
+            }
+            update() {
+                this.x += this.speed;
+                this.y += this.speed * 0.8; // Biroz qiyalik
+                this.alpha -= 0.006;
+                if (this.alpha <= 0) this.reset();
+            }
+            draw() {
+                ctx.strokeStyle = `rgba(255,255,255,${this.alpha})`;
+                ctx.lineWidth = this.size;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.len, this.y - this.len * 0.8);
+                ctx.stroke();
+            }
+        }
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let comets = [];
+        for (let i = 0; i < 15; i++) comets.push(new Comet());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            comets.forEach(c => { c.update(); c.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Tugmalar funksiyasi
+        function changeSpeed(factor) {
+            document.querySelectorAll('.orbit').forEach(orbit => {
+                const dur = parseFloat(getComputedStyle(orbit).getPropertyValue('--duration'));
+                orbit.style.setProperty('--duration', `${dur * factor}s`);
+            });
+        }
+
+        function changeSize(factor) {
+            document.querySelectorAll('.planet').forEach(planet => {
+                const currentScale = planet.style.transform.match(/scale\(([^)]+)\)/);
+                let scale = currentScale ? parseFloat(currentScale[1]) : 1;
+                scale *= factor;
+                planet.style.transform = `translate3d(0, -50%, var(--z)) scale(${scale}) rotateY(0deg)`;
+            });
+        }
+    </script>
+</body>
+</html>
